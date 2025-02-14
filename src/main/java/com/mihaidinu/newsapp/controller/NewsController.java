@@ -2,8 +2,11 @@ package com.mihaidinu.newsapp.controller;
 
 import com.mihaidinu.newsapp.model.NewsArticle;
 import com.mihaidinu.newsapp.service.NewsService;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -19,7 +22,15 @@ public class NewsController {
     }
 
     @GetMapping("/latest")
-    public List<NewsArticle> getLatestNews() {
-        return newsService.fetchLatestNews();
+    public NewsResponseWrapper getLatestNews(
+            @RequestParam(required = false) String country,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String sources,
+            @RequestParam(required = false) String q) {
+
+        List<NewsArticle> articles = newsService.fetchLatestNews(country, category, sources, q);
+        boolean isCached = !articles.isEmpty();
+
+        return new NewsResponseWrapper(isCached ? "HIT" : "MISS", articles.size(), articles);
     }
 }
