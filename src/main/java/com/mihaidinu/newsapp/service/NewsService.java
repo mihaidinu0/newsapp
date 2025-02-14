@@ -68,7 +68,7 @@ public class NewsService {
         }
 
         String finalUrl = urlBuilder.toUriString();
-        log.info("🌎 Fetching fresh news from NewsAPI: {}", finalUrl);
+        log.info("Fetching updated news from NewsAPI: {}", finalUrl);
 
         // Call NewsAPI
         NewsResponse response = restTemplate.getForObject(finalUrl, NewsResponse.class);
@@ -87,11 +87,11 @@ public class NewsService {
 
             newsCacheRepository.save(newCache);
 
-            log.info("💾 Stored {} articles in cache for key: {}", articles.size(), cacheKey);
+            log.info("Stored {} articles in cache for key: {}", articles.size(), cacheKey);
             return savedArticles;
         }
 
-        log.warn("⚠️ Failed to fetch news from NewsAPI for key: {}", cacheKey);
+        log.warn("Failed to fetch news for key: {}", cacheKey);
         return List.of();
     }
 
