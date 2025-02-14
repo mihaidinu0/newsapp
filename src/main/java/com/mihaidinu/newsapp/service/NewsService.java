@@ -37,20 +37,26 @@ public class NewsService {
         this.restTemplate = restTemplate;
     }
 
-    public List<NewsArticle> fetchLatestNews(String country, String category, String sources, String query) {
+    public List<NewsArticle> fetchLatestNews(String country, String category, String sources, String query, int page, int pageSize) {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
         String cacheKey = generateCacheKey(country, category, sources, query);
 
         NewsCache cache = newsCacheRepository.findByCacheKeyAndFetchedAtAfter(cacheKey, oneDayAgo);
         if (cache != null) {
-            log.info("✅ Returning cached news for key: {}", cacheKey);
-            return cache.getArticles();
+            log.info("Returning cached news for key: {}", cacheKey);
+            return getPaginatedArticles(cache.getArticles(), page, pageSize); // Apply pagination
         }
 
-        log.info("🌎 Fetching fresh news from NewsAPI for key: {}", cacheKey);
+        log.info("Fetching fresh news from NewsAPI for key: {}", cacheKey);
 
+        return fetchFromNewsApi(country, category, sources, query, cacheKey, page, pageSize);
+    }
+
+    private List<NewsArticle> fetchFromNewsApi(String country, String category, String sources, String query, String cacheKey, int page, int pageSize) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(newsApiUrl)
-                .queryParam("apiKey", apiKey);
+                .queryParam("apiKey", apiKey)
+                .queryParam("page", page)
+                .queryParam("pageSize", pageSize);
 
         if (sources != null && !sources.isEmpty()) {
             urlBuilder.queryParam("sources", sources);
@@ -70,7 +76,6 @@ public class NewsService {
         String finalUrl = urlBuilder.toUriString();
         log.info("Fetching updated news from NewsAPI: {}", finalUrl);
 
-        // Call NewsAPI
         NewsResponse response = restTemplate.getForObject(finalUrl, NewsResponse.class);
 
         if (response != null && response.getArticles() != null) {
@@ -84,15 +89,25 @@ public class NewsService {
             newCache.setCacheKey(cacheKey);
             newCache.setFetchedAt(LocalDateTime.now());
             newCache.setArticles(savedArticles);
-
             newsCacheRepository.save(newCache);
 
             log.info("Stored {} articles in cache for key: {}", articles.size(), cacheKey);
-            return savedArticles;
+            return getPaginatedArticles(savedArticles, page, pageSize);
         }
 
         log.warn("Failed to fetch news for key: {}", cacheKey);
         return List.of();
+    }
+
+    private List<NewsArticle> getPaginatedArticles(List<NewsArticle> articles, int page, int pageSize) {
+        int start = (page - 1) * pageSize;
+        int end = Math.min(start + pageSize, articles.size());
+
+        if (start >= articles.size()) {
+            return List.of(); // Return empty if page is out of bounds
+        }
+
+        return articles.subList(start, end);
     }
 
     private NewsArticle convertToEntity(NewsArticleDto dto) {
