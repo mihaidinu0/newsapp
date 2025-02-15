@@ -39,7 +39,7 @@ public class NewsService {
 
     public List<NewsArticle> fetchLatestNews(String country, String category, String sources, String query, int page, int pageSize) {
         LocalDateTime oneDayAgo = LocalDateTime.now().minusDays(1);
-        String cacheKey = generateCacheKey(country, category, sources, query);
+        String cacheKey = generateCacheKey(country, category, sources, query, page, pageSize);
 
         NewsCache cache = newsCacheRepository.findByCacheKeyAndFetchedAtAfter(cacheKey, oneDayAgo);
         if (cache != null) {
@@ -121,11 +121,12 @@ public class NewsService {
         return article;
     }
 
-    private String generateCacheKey(String country, String category, String sources, String query) {
-        return String.format("country:%s-category:%s-sources:%s-q:%s",
+    private String generateCacheKey(String country, String category, String sources, String query, int page, int pageSize) {
+        return String.format("country:%s-category:%s-sources:%s-q:%s-page:%d-size:%d",
                 country != null ? country : "none",
                 category != null ? category : "none",
                 sources != null ? sources : "none",
-                query != null ? query : "none");
+                query != null ? query : "none",
+                page, pageSize);
     }
 }

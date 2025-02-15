@@ -1,27 +1,29 @@
 package com.mihaidinu.newsapp.model;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import java.time.OffsetDateTime;
+
+import com.mihaidinu.newsapp.utils.OffsetDateTimeDeserializer;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
-@Entity
 @Getter
 @Setter
+@Entity
 public class NewsArticle {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(columnDefinition = "TEXT")
-    private String description;
-
     private String title;
+    @Column(length = 1000)
+    private String description;
     private String url;
     private String image;
     private String source;
 
-    private LocalDateTime publishedAt;
+    @Column(columnDefinition = "TIMESTAMP")
+    @JsonDeserialize(using = OffsetDateTimeDeserializer.class)
+    private OffsetDateTime publishedAt;
 }

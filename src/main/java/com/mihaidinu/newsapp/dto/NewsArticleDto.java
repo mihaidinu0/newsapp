@@ -1,6 +1,7 @@
 package com.mihaidinu.newsapp.dto;
 
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 public class NewsArticleDto {
     private String title;
@@ -8,7 +9,7 @@ public class NewsArticleDto {
     private String url;
     private String urlToImage;
     private String sourceName;
-    private LocalDateTime publishedAt;
+    private OffsetDateTime publishedAt;
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
@@ -25,6 +26,6 @@ public class NewsArticleDto {
     public String getSourceName() { return sourceName; }
     public void setSourceName(String sourceName) { this.sourceName = sourceName; }
 
-    public LocalDateTime getPublishedAt() { return publishedAt; }
-    public void setPublishedAt(LocalDateTime publishedAt) { this.publishedAt = publishedAt; }
+    public OffsetDateTime getPublishedAt() { return publishedAt; }
+    public void setPublishedAt(OffsetDateTime publishedAt) { this.publishedAt = publishedAt; }
 }
