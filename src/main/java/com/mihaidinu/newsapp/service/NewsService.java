@@ -44,15 +44,15 @@ public class NewsService {
         NewsCache cache = newsCacheRepository.findByCacheKeyAndFetchedAtAfter(cacheKey, oneDayAgo);
         if (cache != null) {
             log.info("Returning cached news for key: {}", cacheKey);
-            return getPaginatedArticles(cache.getArticles(), page, pageSize); // Apply pagination
+            return getCachedArticles(cache.getArticles(), page, pageSize);
         }
 
         log.info("Fetching fresh news from NewsAPI for key: {}", cacheKey);
 
-        return fetchFromNewsApi(country, category, sources, query, cacheKey, page, pageSize);
+        return fetchUpdatedNews(country, category, sources, query, cacheKey, page, pageSize);
     }
 
-    private List<NewsArticle> fetchFromNewsApi(String country, String category, String sources, String query, String cacheKey, int page, int pageSize) {
+    private List<NewsArticle> fetchUpdatedNews(String country, String category, String sources, String query, String cacheKey, int page, int pageSize) {
         UriComponentsBuilder urlBuilder = UriComponentsBuilder.fromHttpUrl(newsApiUrl)
                 .queryParam("apiKey", apiKey)
                 .queryParam("page", page)
@@ -92,19 +92,19 @@ public class NewsService {
             newsCacheRepository.save(newCache);
 
             log.info("Stored {} articles in cache for key: {}", articles.size(), cacheKey);
-            return getPaginatedArticles(savedArticles, page, pageSize);
+            return getCachedArticles(savedArticles, page, pageSize);
         }
 
         log.warn("Failed to fetch news for key: {}", cacheKey);
         return List.of();
     }
 
-    private List<NewsArticle> getPaginatedArticles(List<NewsArticle> articles, int page, int pageSize) {
+    private List<NewsArticle> getCachedArticles(List<NewsArticle> articles, int page, int pageSize) {
         int start = (page - 1) * pageSize;
         int end = Math.min(start + pageSize, articles.size());
 
         if (start >= articles.size()) {
-            return List.of(); // Return empty if page is out of bounds
+            return List.of();
         }
 
         return articles.subList(start, end);
