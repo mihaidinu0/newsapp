@@ -18,7 +18,8 @@ function App() {
         setLoading(true);
         const query = searchTerm ? `&q=${searchTerm}` : '';
         const category = selectedCategory ? `&category=${selectedCategory}` : '';
-        fetch(`http://localhost:8080/api/news/latest?page=${page}&pageSize=10&country=${country}${query}${category}`)
+        const apiUrl = process.env.NEWS_BACKEND_API_URL
+        fetch(`${apiUrl}/news/latest?page=${page}&pageSize=10&country=${country}${query}${category}`)
             .then((res) => res.json())
             .then((data) => {
                 setArticles(data.articles);
