@@ -20,6 +20,7 @@ public class NewsArticle {
     @Column(length = 1000)
     private String description;
     private String url;
+    @Column(length = 500)
     private String image;
     private String source;
 
